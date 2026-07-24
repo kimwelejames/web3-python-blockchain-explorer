@@ -33,3 +33,6 @@ def get_latest_block():
 def network_status():
 
     return "Connected" if w3.is_connected() else "Disconnected"
+
+
+

@@ -5,246 +5,282 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Ethereum Portfolio Dashboard</title>
+    <title>WonderBytes Labs | Blockchain Dashboard</title>
 
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/style.css') }}">
 
+    <link rel="icon"
+      href="{{ url_for('static', filename='favicon.ico') }}">
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </head>
 
 <body>
 
-<div class="container">
+<div class="dashboard">
 
-   <h1>🚀 WonderBytes labs Blockchain Analytics</h1>
+    <!-- ================= SIDEBAR ================= -->
 
-   <p class="subtitle">Professional Ethereum Portfolio Tracker</p>
+    <aside class="sidebar">
 
-    <form method="POST" class="wallet-form">
+        <h2>⚡ ChainView</h2>
 
-        <input
-            type="text"
-            name="wallet"
-            placeholder="Enter Ethereum Wallet Address"
-            value="{{ wallet if wallet else '' }}"
-            required>
+        <ul>
+            <li>🏠 Dashboard</li>
+            <li>💰 Portfolio</li>
+            <li>📈 Analytics</li>
+            <li>⛽ Network</li>
+            <li>⚙ Settings</li>
+        </ul>
 
-        <button type="submit">
-            Load Wallet
-        </button>
+    </aside>
 
-    </form>
+    <!-- ================= MAIN ================= -->
 
-    {% if wallet %}
+    <main class="main-content">
 
-    <h2>Wallet</h2>
+        <!-- Navbar -->
 
-    <p class="wallet-address">
-        {{ wallet }}
-    </p>
+        <header class="navbar">
 
-    <div class="wallet-info">
+            <h1>Ethereum Portfolio Dashboard</h1>
 
-    <h3>Wallet Overview</h3>
+            <span class="badge success">
+                🟢 {{ status }}
+            </span>
 
-    <p><strong>Address:</strong> {{ wallet }}</p>
+        </header>
 
-    <p><strong>ETH Balance:</strong> {{ eth_balance }} ETH</p>
+        <!-- Hero -->
 
-    <p><strong>Assets Held:</strong> {{ active_tokens }}</p>
+        <section class="hero">
 
-</div>
+            <h2>🚀 WonderBytes Labs Blockchain Analytics</h2>
 
-    <!-- SUMMARY CARDS -->
+            <p>
+                Professional Ethereum Portfolio Tracker
+            </p>
 
-    <div class="cards">
+        </section>
 
-        <div class="card">
-            <h3>ETH</h3>
-            <p>{{ eth_balance }}</p>
-        </div>
+        <!-- Wallet Search -->
 
-        <div class="card">
-            <h3>Tokens</h3>
-            <p>{{ portfolio|length }}</p>
-        </div>
+        <form method="POST" class="wallet-form">
 
-        <div class="card">
-            <h3>Transactions</h3>
-            <p>{{ transactions|length }}</p>
-        </div>
+            <input
+                    type="text"
+                    name="wallet"
+                    placeholder="Enter Ethereum Wallet Address"
+                    value="{{ wallet if wallet else '' }}"
+                    required>
 
-        <div class="card">
-            <h3>Network</h3>
-            <p>Sepolia</p>
-        </div>
+            <button type="submit">
+                Load Wallet
+            </button>
 
-    </div>
+        </form>
 
-    <h2>Network Status</h2>
+        {% if wallet %}
 
-<div class="stats-grid">
+        <!-- Wallet Info -->
 
-    <div class="card">
-        <h3>ETH Price</h3>
-        <p>${{ eth_price }}</p>
-    </div>
+        <section class="wallet-info">
 
-    <div class="card">
-        <h3>Gas</h3>
-        <p>{{ gas_price }} Gwei</p>
-    </div>
+            <h3>Wallet Overview</h3>
 
-    <div class="card">
-        <h3>Latest Block</h3>
-        <p>{{ latest_block }}</p>
-    </div>
+            <p><strong>Address:</strong> {{ wallet }}</p>
 
-    <div class="card">
-        <h3>Status</h3>
+            <p><strong>Balance:</strong> {{ eth_balance }} ETH</p>
 
-        {% if status == "Connected" %}
-        <span class="badge success">🟢 Connected</span>
-        {% else %}
-        <span class="badge danger">🔴 Offline</span>
+            <p><strong>Assets:</strong> {{ active_tokens }}</p>
+
+        </section>
+
+        <!-- Summary Cards -->
+
+        <section class="cards">
+
+            <div class="card">
+                <h3>ETH Balance</h3>
+                <p>{{ eth_balance }}</p>
+            </div>
+
+            <div class="card">
+                <h3>Portfolio Value</h3>
+                <p>${{ portfolio_value }}</p>
+            </div>
+
+            <div class="card">
+                <h3>ETH Price</h3>
+                <p>${{ eth_price }}</p>
+            </div>
+
+            <div class="card">
+                <h3>Gas Price</h3>
+                <p>{{ gas_price }} Gwei</p>
+            </div>
+
+            <div class="card">
+                <h3>Latest Block</h3>
+                <p>{{ latest_block }}</p>
+            </div>
+
+            <div class="card">
+                <h3>Network</h3>
+                <p>Sepolia</p>
+            </div>
+
+        </section>
+
+        <!-- Portfolio Chart -->
+
+        <section class="chart-section">
+
+            <h2>Portfolio Allocation</h2>
+
+            <div class="chart-container">
+
+                <canvas id="portfolioChart"></canvas>
+
+            </div>
+
+        </section>
+
+        <!-- Portfolio Table -->
+
+        <section>
+
+            <h2>ERC-20 Portfolio</h2>
+
+            <table>
+
+                <thead>
+
+                <tr>
+                    <th>Token</th>
+                    <th>Balance</th>
+                    <th>Status</th>
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for token in portfolio %}
+
+                <tr>
+
+                    <td>{{ token.symbol }}</td>
+
+                    <td>{{ "%.4f"|format(token.balance) }}</td>
+
+                    <td>
+
+                        {% if token.balance > 0 %}
+
+                        <span class="badge success">
+                            Holding
+                        </span>
+
+                        {% else %}
+
+                        <span class="badge danger">
+                            Empty
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </section>
+
+        <!-- Transactions -->
+
+        <section>
+
+            <h2>Recent Transactions</h2>
+
+            <table>
+
+                <thead>
+
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Asset</th>
+                    <th>Amount</th>
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for tx in transactions %}
+
+                <tr>
+
+                    <td>{{ tx.time }}</td>
+
+                    <td>
+
+                        {% if tx.type == "Received" %}
+
+                        <span class="badge success">
+                            ⬇ Received
+                        </span>
+
+                        {% else %}
+
+                        <span class="badge send">
+                            ⬆ Sent
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>{{ tx.asset }}</td>
+
+                    <td>{{ tx.amount }}</td>
+
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </section>
+
         {% endif %}
 
-    </div>
+        <footer>
+
+            WonderBytes Labs Blockchain Dashboard
+
+            <br><br>
+
+            Built with Flask • Web3.py • Alchemy • Chart.js
+
+        </footer>
+
+    </main>
 
 </div>
 
+<!-- Chart -->
 
-    <!-- NETWORK STATS -->
-
-    <h2>Portfolio Assets</h2>
-
-<table>
-
-<tr>
-    <th>Token</th>
-    <th>Balance</th>
-    <th>Status</th>
-</tr>
-
-{% for token in portfolio %}
-
-<tr>
-
-<td>{{ token.symbol }}</td>
-
-<td>{{ "%.4f"|format(token.balance) }}</td>
-
-<td>
-
-{% if token.balance > 0 %}
-
-<span class="badge success">Holding</span>
-
-{% else %}
-
-<span class="badge danger">Empty</span>
-
-{% endif %}
-
-</td>
-
-</tr>
-
-{% endfor %}
-
-    <div class="card">
-
-    <h3>Portfolio Value</h3>
-
-    <p>${{ portfolio_value }}</p>
-
- </div>
-
-</table>
-
-    <!-- TOKEN PORTFOLIO -->
-
-    <h2>ERC-20 Portfolio</h2>
-
-    <table>
-
-        <thead>
-
-        <tr>
-            <th>Token</th>
-            <th>Balance</th>
-        </tr>
-
-        </thead>
-
-        <tbody>
-
-        {% for token in portfolio %}
-
-        <tr>
-            <td>{{ token.symbol }}</td>
-            <td>{{ token.balance }}</td>
-        </tr>
-
-        {% endfor %}
-
-        </tbody>
-
-    </table>
-
-<h2>Portfolio Allocation</h2>
-
-<div class="chart-container">
-
-    <canvas id="portfolioChart"></canvas>
-
-</div>
-    <!-- TRANSACTIONS -->
-
-    <h2>Recent Transactions</h2>
-
-    <table>
-
-        <thead>
-
-        <tr>
-            <th>Date</th>
-            <th>Type</th>
-            <th>Asset</th>
-            <th>Amount</th>
-        </tr>
-
-        </thead>
-
-        <tbody>
-
-        {% for tx in transactions %}
-
-        <tr>
-            <td>{{ tx.time }}</td>
-            <td>
-    {% if tx.type == "Received" %}
-        <span class="badge success">⬇ Received</span>
-    {% else %}
-        <span class="badge send">⬆ Sent</span>
-    {% endif %}
-</td>
-            <td>{{ tx.asset }}</td>
-            <td>{{ tx.amount }}</td>
-        </tr>
-
-        {% endfor %}
-
-        </tbody>
-
-    </table>
-
-    {% endif %}
-
-</div>
+{% if wallet %}
 
 <script>
 
@@ -264,22 +300,18 @@ const balances = [
 {% endfor %}
 ];
 
-const ctx = document.getElementById("portfolioChart");
+new Chart(document.getElementById("portfolioChart"),{
 
-new Chart(ctx, {
+    type:"doughnut",
 
-    type: "doughnut",
+    data:{
+        labels:labels,
 
-    data: {
+        datasets:[{
 
-        labels: labels,
+            data:balances,
 
-        datasets: [{
-
-            data: balances,
-
-            backgroundColor: [
-
+            backgroundColor:[
                 "#3b82f6",
                 "#10b981",
                 "#f59e0b",
@@ -287,43 +319,26 @@ new Chart(ctx, {
                 "#8b5cf6",
                 "#06b6d4",
                 "#f97316"
-
             ]
 
         }]
-
     },
 
-    options: {
-
-        responsive: true,
-
-        plugins: {
-
-            legend: {
-
-                position: "bottom"
-
+    options:{
+        responsive:true,
+        plugins:{
+            legend:{
+                position:"bottom"
             }
-
         }
-
     }
 
 });
 
 </script>
 
+{% endif %}
+
 </body>
-
-<footer>
-
-WonderBytes labs Blockchain Dashboard
-
-<br>
-
-Built with Flask • Web3.py • Alchemy API • Chart.js
-
-</footer>
 
 </html>
